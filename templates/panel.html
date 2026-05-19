@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         .tabla-admin { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; color: #333; border-radius: 8px; overflow: hidden; }
-        .tabla-admin th, .tabla-admin td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tabla-admin th, .tabla-admin td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
         .tabla-admin th { background-color: var(--azul-bombonera); color: white; }
         
         /* Etiquetas de estado */
@@ -19,12 +19,18 @@
         .masculino { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
         .femenino { background: #fff0f6; color: #eb2f96; border: 1px solid #ffadd2; }
 
-        .btn-aprobar { background: #28a745; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.85rem; display: inline-block; }
+        /* Estilos de los botones de acción */
+        .btn-accion { display: inline-block; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.85rem; margin-right: 5px; text-align: center; }
+        .btn-aprobar { background: #28a745; color: white; }
         .btn-aprobar:hover { background: #218838; }
+        .btn-voucher { background: #17a2b8; color: white; }
+        .btn-voucher:hover { background: #138496; }
+        .sin-voucher { color: #6c757d; font-style: italic; font-size: 0.85rem; margin-right: 10px; }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 1000px; width: 95%;"> <h2>PANEL DE CONTROL (ADMIN)</h2>
+    <div class="container" style="max-width: 1100px; width: 95%;"> 
+        <h2>PANEL DE CONTROL (ADMIN)</h2>
         <p>Lista de equipos inscritos para el 4° Aniversario</p>
         
         <table class="tabla-admin">
@@ -32,12 +38,13 @@
                 <tr>
                     <th>ID</th>
                     <th>Equipo</th>
-                    <th>Ciudad</th> <th>Delegado</th>
+                    <th>Ciudad</th> 
+                    <th>Delegado</th>
                     <th>Categoría</th> 
                     <th>WhatsApp</th>
                     <th>Método</th>
                     <th>Estado</th>
-                    <th>Acción</th>
+                    <th style="text-align: center;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,7 +52,8 @@
                 <tr>
                     <td>{{ equipo[0] }}</td>
                     <td><strong>{{ equipo[1] }}</strong></td>
-                    <td>{{ equipo[2] }}</td> <td>{{ equipo[3] }}</td>
+                    <td>{{ equipo[2] }}</td> 
+                    <td>{{ equipo[3] }}</td>
                     <td>
                         <span class="cat-badge {% if equipo[4] == 'Masculino' %}masculino{% else %}femenino{% endif %}">
                             {{ equipo[4] }}
@@ -58,11 +66,19 @@
                             {{ equipo[7] }}
                         </span>
                     </td>
-                    <td>
-                        {% if equipo[7] == 'Pendiente' %}
-                            <a href="/admin/aprobar/{{ equipo[0] }}" class="btn-aprobar">Aprobar y Crear Ticket</a>
+                    <td style="text-align: center; white-space: nowrap;">
+                        {% if equipo[8] %}
+                            <a href="{{ url_for('ver_comprobante', filename=equipo[8]|replace('comprobantes/', '')|replace('comprobantes\\', '')) }}" target="_blank" class="btn-accion btn-voucher">
+                                👁️ Ver Voucher
+                            </a>
                         {% else %}
-                            ✅ Listo
+                            <span class="sin-voucher">Sin Voucher</span>
+                        {% endif %}
+
+                        {% if equipo[7] == 'Pendiente' %}
+                            <a href="/admin/aprobar/{{ equipo[0] }}" class="btn-accion btn-aprobar">✅ Aprobar y Ticket</a>
+                        {% else %}
+                            <span style="color: #28a745; font-weight: bold; font-size: 0.9rem; margin-left: 5px;">| ⚽ Listo</span>
                         {% endif %}
                     </td>
                 </tr>
