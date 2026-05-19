@@ -62,9 +62,13 @@ def inscribir():
     return render_template('espera.html', equipo=nombre)
 
 # PANEL DE CONTROL PARA VER TODOS LOS CAMPOS JUNTOS (CIUDAD, CATEGORÍA, ETC.)
+# PANEL DE CONTROL (ADMIN) - VERSIÓN CORREGIDA
 @app.route('/admin/panel')
 def panel_admin():
-    conn = sqlite3.connect('torneo.db')
+    # Nos aseguramos de que la tabla exista antes de consultarla por si la DB está vacía
+    init_db() 
+    
+    conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     cursor.execute("SELECT id, nombre_equipo, ciudad, delegado, categoria, telefono, metodo_pago, estado_pago FROM equipos")
     lista_equipos = cursor.fetchall()
