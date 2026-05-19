@@ -26,6 +26,9 @@
         .btn-voucher { background: #17a2b8; color: white; }
         .btn-voucher:hover { background: #138496; }
         .sin-voucher { color: #6c757d; font-style: italic; font-size: 0.85rem; margin-right: 10px; }
+
+        .btn-eliminar { background: #dc3545; color: white; }
+        .btn-eliminar:hover { background: #bd2130; }
     </style>
 </head>
 <body>
@@ -68,7 +71,7 @@
                     </td>
                     <td style="text-align: center; white-space: nowrap;">
                         {% if equipo[8] %}
-                            <a href="{{ url_for('ver_comprobante', filename=equipo[8]|replace('comprobantes/', '')|replace('comprobantes\\', '')) }}" target="_blank" class="btn-accion btn-voucher">
+                            <a href="{{ url_for('ver_comprobante', filename=equipo[8]) }}" target="_blank" class="btn-accion btn-voucher">
                                 👁️ Ver Voucher
                             </a>
                         {% else %}
@@ -78,8 +81,14 @@
                         {% if equipo[7] == 'Pendiente' %}
                             <a href="/admin/aprobar/{{ equipo[0] }}" class="btn-accion btn-aprobar">✅ Aprobar y Ticket</a>
                         {% else %}
-                            <span style="color: #28a745; font-weight: bold; font-size: 0.9rem; margin-left: 5px;">| ⚽ Listo</span>
+                            <span style="color: #28a745; font-weight: bold; font-size: 0.9rem; margin-left: 5px; margin-right: 10px;">⚽ Listo</span>
                         {% endif %}
+
+                        <a href="/admin/eliminar/{{ equipo[0] }}" 
+                           class="btn-accion btn-eliminar" 
+                           onclick="return confirm('¿Estás seguro de que deseas eliminar al equipo {{ equipo[1] }}? Esto borrará sus datos y su voucher de forma permanente.');">
+                            🗑️ Eliminar
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
