@@ -8,14 +8,23 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-CARPETA_COMPROBANTES = 'comprobantes'
+# ==========================================
+# CONFIGURACIÓN DE RUTAS ABSOLUTAS PARA RENDER
+# ==========================================
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+RUTA_DB = os.path.join(BASE_DIR, 'torneo.db')
+CARPETA_COMPROBANTES = os.path.join(BASE_DIR, 'comprobantes')
+
 app.config['UPLOAD_FOLDER'] = CARPETA_COMPROBANTES
 
-if not os.path.exists(CARPETA_COMPROBANTES):
-    os.makedirs(CARPETA_COMPROBANTES)
-
+# ==========================================
+# FUNCIÓN PARA INICIALIZAR LA BASE DE DATOS
+# ==========================================
 def init_db():
-    conn = sqlite3.connect('torneo.db')
+    # Nos aseguramos de que la carpeta de comprobantes exista físicamente
+    os.makedirs(CARPETA_COMPROBANTES, exist_ok=True)
+    
+    conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     # Estructura limpia de la tabla
     cursor.execute('''CREATE TABLE IF NOT EXISTS equipos 
@@ -24,6 +33,14 @@ def init_db():
          ruta_comprobante TEXT, estado_pago TEXT)''')
     conn.commit()
     conn.close()
+
+# OBLIGAMOS A FLASK A EJECUTAR LA FUNCIÓN APENAS SE ENCIENDA EN INTERNET
+with app.app_context():
+    init_db()
+
+# ==========================================
+# RUTAS DE LA APLICACIÓN
+# ==========================================
 
 @app.route('/')
 def index():
@@ -50,7 +67,8 @@ def inscribir():
     ahora = datetime.now()
     fecha_y_hora_actual = ahora.strftime("%d/%m/%Y %H:%M")
     
-    conn = sqlite3.connect('torneo.db')
+    # Corregido: Ahora usa RUTA_DB
+    conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     cursor.execute('''INSERT INTO equipos 
         (nombre_equipo, ciudad, telefono, delegado, categoria, fecha_pago, metodo_pago, ruta_comprobante, estado_pago) 
@@ -61,13 +79,12 @@ def inscribir():
     
     return render_template('espera.html', equipo=nombre)
 
-# PANEL DE CONTROL PARA VER TODOS LOS CAMPOS JUNTOS (CIUDAD, CATEGORÍA, ETC.)
-# PANEL DE CONTROL (ADMIN) - VERSIÓN CORREGIDA
+# PANEL DE CONTROL (ADMIN)
 @app.route('/admin/panel')
 def panel_admin():
-    # Nos aseguramos de que la tabla exista antes de consultarla por si la DB está vacía
     init_db() 
     
+    # Corregido: Ahora apunta correctamente a RUTA_DB
     conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     cursor.execute("SELECT id, nombre_equipo, ciudad, delegado, categoria, telefono, metodo_pago, estado_pago FROM equipos")
@@ -76,10 +93,11 @@ def panel_admin():
     conn.close()
     return render_template('panel.html', equipos=lista_equipos)
 
-# RUTA PARA APROBAR PAGO Y GENERAR TICKET CON EL QR BAJADO
+# RUTA PARA APROBAR PAGO Y GENERAR TICKET
 @app.route('/admin/aprobar/<int:id>')
 def aprobar_y_generar_ticket(id):
-    conn = sqlite3.connect('torneo.db')
+    # Corregido: Ahora usa RUTA_DB
+    conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     
     cursor.execute("UPDATE equipos SET estado_pago = 'Pagado' WHERE id = ?", (id,))
@@ -95,7 +113,9 @@ def aprobar_y_generar_ticket(id):
     # GENERAR EL CÓDIGO QR 
     datos_qr = f"ID: {equipo[0]}\nEquipo: {equipo[1]}\nCategoria: {categoria_equipo}\nPago: {metodo_usado}\nEstado: PAGADO"
     qr_img = qrcode.make(datos_qr)
-    qr_ruta = f"qr_temporal_{id}.png"
+    
+    # Corregido: Ruta absoluta para el QR temporal para evitar bloqueos en Render
+    qr_ruta = os.path.join(BASE_DIR, f"qr_temporal_{id}.png")
     qr_img.save(qr_ruta)
 
     # CONFIGURAR EL PDF OFICIAL (100mm x 150mm)
@@ -134,20 +154,17 @@ def aprobar_y_generar_ticket(id):
     pdf.cell(80, 6, txt=f"Pago: {metodo_usado}", ln=True, align='C') 
     pdf.ln(4)
 
-   # 3. QR CENTRADO Y BAJADO UN POQUITO (y=80)
+    # QR CENTRADO Y BAJADO
     pdf.image(qr_ruta, x=34, y=80, w=32, h=32)
-    
-    # Reducimos este salto para que el texto suba más (antes estaba en 36)
     pdf.ln(33) 
 
-    # 4. SELLO PAGO EXITOSO (Subido y centrado correctamente)
+    # SELLO PAGO EXITOSO
     pdf.set_text_color(220, 53, 69) 
     pdf.set_font("Arial", 'B', 16)
-    
-    # Usamos cell con un ancho de 80 (igual al de arriba) para que el align='C' funcione perfecto
     pdf.cell(80, 10, txt="PAGO EXITOSO", ln=True, align='C')
     
-    nombre_archivo = f"ticket_bombonera_{id}.pdf"
+    # Corregido: Ruta absoluta para el archivo PDF final
+    nombre_archivo = os.path.join(BASE_DIR, f"ticket_bombonera_{id}.pdf")
     pdf.output(nombre_archivo)
     
     if os.path.exists(qr_ruta):
@@ -156,5 +173,4 @@ def aprobar_y_generar_ticket(id):
     return send_file(nombre_archivo, as_attachment=True)
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
