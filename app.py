@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, send_file, url_for
 import sqlite3
 from fpdf import FPDF
 import qrcode
@@ -56,55 +56,90 @@ def inscribir():
     metodo_pago = request.form.get('metodo_pago')
     
     archivo = request.files.get('comprobante')
-    ruta_comprobante = ""
+    nombre_seguro = ""
     
     if archivo and archivo.filename != '':
         extension = os.path.splitext(archivo.filename)[1]
         nombre_seguro = secure_filename(f"{nombre}_{metodo_pago}{extension}")
-        ruta_comprobante = os.path.join(app.config['UPLOAD_FOLDER'], nombre_seguro)
-        archivo.save(ruta_comprobante)
+        ruta_completa = os.path.join(app.config['UPLOAD_FOLDER'], nombre_seguro)
+        archivo.save(ruta_completa)
     
     ahora = datetime.now()
     fecha_y_hora_actual = ahora.strftime("%d/%m/%Y %H:%M")
     
-    # Corregido: Ahora usa RUTA_DB
     conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     cursor.execute('''INSERT INTO equipos 
         (nombre_equipo, ciudad, telefono, delegado, categoria, fecha_pago, metodo_pago, ruta_comprobante, estado_pago) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-        (nombre, ciudad, telefono, delegado, categoria, fecha_y_hora_actual, metodo_pago, ruta_comprobante, 'Pendiente'))
+        (nombre, ciudad, telefono, delegado, categoria, fecha_y_hora_actual, metodo_pago, nombre_seguro, 'Pendiente'))
     conn.commit()
     conn.close()
     
     return render_template('espera.html', equipo=nombre)
 
 
-# PANEL DE CONTROL (ADMIN) - ACTUALIZADO PARA TRAER EL COMPROBANTE
+# PANEL DE CONTROL (ADMIN) - EN ORDEN EXACTO DE LA TABLA
 @app.route('/admin/panel')
 def panel_admin():
     init_db() 
     
     conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
-    # Agregamos 'ruta_comprobante' al final de la consulta (es el 9no campo, índice 8)
-    cursor.execute("SELECT id, nombre_equipo, ciudad, delegado, categoria, telefono, metodo_pago, estado_pago, ruta_comprobante FROM equipos")
+    # Mapeamos los índices de manera estricta para el panel.html
+    cursor.execute("""
+        SELECT 
+            id,               -- [0]
+            nombre_equipo,    -- [1]
+            ciudad,           -- [2]
+            delegado,         -- [3]
+            categoria,        -- [4]
+            telefono,         -- [5]
+            metodo_pago,      -- [6]
+            estado_pago,      -- [7]
+            ruta_comprobante  -- [8] ¡Ahora sí coincide perfectamente!
+        FROM equipos
+    """)
     lista_equipos = cursor.fetchall()
     conn.commit()
     conn.close()
     return render_template('panel.html', equipos=lista_equipos)
 
-# NUEVA RUTA PARA VER LOS COMPROBANTES DESDE EL PANEL
+
+# RUTA PARA VER LOS COMPROBANTES DESDE EL PANEL
 @app.route('/admin/comprobante/<filename>')
 def ver_comprobante(filename):
-    # Esto busca de forma segura el archivo dentro de la carpeta 'comprobantes' y lo muestra en el navegador
     return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+
+# NUEVA RUTA PARA ELIMINAR UN EQUIPO Y SU ARCHIVO VOUCHER
+@app.route('/admin/eliminar/<int:id>')
+def eliminar_equipo(id):
+    conn = sqlite3.connect(RUTA_DB)
+    cursor = conn.cursor()
+    
+    # 1. Buscamos el nombre del archivo del voucher para borrarlo del disco
+    cursor.execute("SELECT ruta_comprobante FROM equipos WHERE id = ?", (id,))
+    resultado = cursor.fetchone()
+    
+    if resultado and resultado[0]:
+        nombre_archivo = resultado[0]
+        ruta_archivo_fisico = os.path.join(app.config['UPLOAD_FOLDER'], nombre_archivo)
+        # Si el archivo físico existe en el servidor, lo eliminamos
+        if os.path.exists(ruta_archivo_fisico):
+            os.remove(ruta_archivo_fisico)
+            
+    # 2. Eliminamos el registro de la base de datos
+    cursor.execute("DELETE FROM equipos WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('panel_admin'))
 
 
 # RUTA PARA APROBAR PAGO Y GENERAR TICKET
 @app.route('/admin/aprobar/<int:id>')
 def aprobar_y_generar_ticket(id):
-    # Corregido: Ahora usa RUTA_DB
     conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
     
@@ -114,6 +149,8 @@ def aprobar_y_generar_ticket(id):
     conn.commit()
     conn.close()
 
+    # De acuerdo a tu CREATE TABLE:
+    # 0:id, 1:nombre_equipo, 2:ciudad, 3:telefono, 4:delegado, 5:categoria, 6:fecha_pago, 7:metodo_pago
     fecha_registro = equipo[6]
     categoria_equipo = equipo[5]
     metodo_usado = equipo[7]
@@ -122,7 +159,6 @@ def aprobar_y_generar_ticket(id):
     datos_qr = f"ID: {equipo[0]}\nEquipo: {equipo[1]}\nCategoria: {categoria_equipo}\nPago: {metodo_usado}\nEstado: PAGADO"
     qr_img = qrcode.make(datos_qr)
     
-    # Corregido: Ruta absoluta para el QR temporal para evitar bloqueos en Render
     qr_ruta = os.path.join(BASE_DIR, f"qr_temporal_{id}.png")
     qr_img.save(qr_ruta)
 
@@ -171,7 +207,6 @@ def aprobar_y_generar_ticket(id):
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(80, 10, txt="PAGO EXITOSO", ln=True, align='C')
     
-    # Corregido: Ruta absoluta para el archivo PDF final
     nombre_archivo = os.path.join(BASE_DIR, f"ticket_bombonera_{id}.pdf")
     pdf.output(nombre_archivo)
     
@@ -179,11 +214,6 @@ def aprobar_y_generar_ticket(id):
         os.remove(qr_ruta)
         
     return send_file(nombre_archivo, as_attachment=True)
-
-# RUTA PARA VER LOS COMPROBANTES DESDE EL PANEL
-@app.route('/admin/comprobante/<filename>')
-def ver_comprobante(filename):
-    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 if __name__ == '__main__':
     app.run(debug=True)
