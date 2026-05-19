@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción de Fulbito - La Bombonera</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="titulo-campeonato">
+            <h2>⚽CAMPEONATO⚽</h2>
+            <span class="subtitulo">4° ANIVERSARIO LA BOMBONERA DE RIO SECO</span>
+        </div>
+
+        <form action="/inscribir" method="POST" enctype="multipart/form-data">
+            <input type="text" name="nombre_equipo" placeholder="Nombre del Equipo" required>
+            <input type="text" name="ciudad" placeholder="Ciudad" required>
+            <input type="tel" name="telefono" placeholder="Número de WhatsApp / Teléfono" required>
+            <input type="text" name="delegado" placeholder="Nombre del Delegado" required>
+            
+            <select name="categoria" required>
+                <option value="" disabled selected>Selecciona la Categoría</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+            </select>
+
+            <div class="seccion-pago">
+    <label class="titulo-pago">Escanea el QR o selecciona tu Método de Pago:</label>
+    
+    <div class="contenedor-metodos">
+        <label class="tarjeta-metodo" onclick="seleccionarMetodo('Yape')">
+            <input type="radio" name="metodo_pago" value="Yape" required style="display:none;">
+            <div class="contenedor-qr-visual">
+                <img src="{{ url_for('static', filename='images/qr_yape.png') }}" alt="QR Yape" class="qr-pago-formulario">
+            </div>
+            <span>Pagar con Yape</span>
+        </label>
+
+        <label class="tarjeta-metodo" onclick="seleccionarMetodo('Plin')">
+            <input type="radio" name="metodo_pago" value="Plin" style="display:none;">
+            <div class="contenedor-qr-visual">
+                <img src="{{ url_for('static', filename='images/qr_plin.png') }}" alt="QR Plin" class="qr-pago-formulario">
+            </div>
+            <span>Pagar con Plin</span>
+        </label>
+
+        <label class="tarjeta-metodo tarjeta-banco" onclick="seleccionarMetodo('Transferencia')">
+            <input type="radio" name="metodo_pago" value="Transferencia" style="display:none;">
+            <div class="icono-tarjeta-banco">💳</div>
+            <span>Tarjeta / CCI</span>
+        </label>
+    </div>
+
+    <div id="info-yape" class="info-metodo" style="display: none;">
+        <p>🟢 Titular: <strong>Wilder olazabal</strong><br>Número: 926 072 145</p>
+    </div>
+    <div id="info-plin" class="info-metodo" style="display: none;">
+        <p>🔵 Titular: <strong>Wilder olazabal</strong><br>Número: 926 072 145</p>
+    </div>
+    <div id="info-tarjeta" class="info-metodo" style="display: none;">
+        <p>🏢 Banco BCP CCI: <strong>002-191123456789012045</strong><br>Cuenta Corriente La Bombonera</p>
+    </div>
+</div>
+
+            <div class="subir-comprobante">
+                <label for="comprobante">Subir captura o foto del voucher:</label>
+                <input type="file" name="comprobante" id="comprobante" accept="image/*" required>
+            </div>
+
+            <p class="precio-info">Costo de inscripción: S/ 100.00</p>
+            
+            <button type="submit" class="btn-generar">GENERAR TICKET / INSCRIBIR</button>
+        </form>
+    </div>
+
+    <script>
+        function seleccionarMetodo(metodo) {
+            let tarjetas = document.querySelectorAll('.tarjeta-metodo');
+            tarjetas.forEach(t => t.classList.remove('activa'));
+
+            document.getElementById("info-yape").style.display = "none";
+            document.getElementById("info-plin").style.display = "none";
+            document.getElementById("info-tarjeta").style.display = "none";
+
+            let tarjetasArray = Array.from(tarjetas);
+            let tarjetaSeleccionada = tarjetasArray.find(t => t.textContent.includes(metodo));
+            
+            if (tarjetaSeleccionada) {
+                tarjetaSeleccionada.classList.add('activa');
+                tarjetaSeleccionada.querySelector('input[type="radio"]').checked = true;
+            }
+
+            if (metodo === 'Yape') document.getElementById("info-yape").style.display = "block";
+            if (metodo === 'Plin') document.getElementById("info-plin").style.display = "block";
+            if (metodo === 'Transferencia') document.getElementById("info-tarjeta").style.display = "block";
+        }
+    </script>
+</body>
+</html>

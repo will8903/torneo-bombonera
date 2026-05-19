@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscripción Recibida - La Bombonera</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container" style="border: 3px solid var(--amarillo-bombonera);">
+        <div class="titulo-campeonato">
+            <h2>¡REGISTRO ENVIADO!</h2>
+            <span class="subtitulo" style="color: var(--azul-bombonera); border-top-color: var(--azul-bombonera);">PROCESANDO VALIDACIÓN</span>
+        </div>
+        
+        <div style="padding: 20px 10px; color: #333; font-size: 1.1rem; line-height: 1.6; text-align: center;">
+            <p>Muchas gracias delegado del equipo <strong>{{ equipo }}</strong>.</p>
+            <p>Hemos recibido los datos de su inscripción y la captura del voucher de pago correctamente. 📩</p>
+            <p style="background: #e6f7ff; padding: 15px; border-radius: 10px; border-left: 5px solid var(--azul-bombonera); font-weight: bold; margin-top: 20px;">
+                🔄 El administrador verificará la transacción en las próximas horas y le enviará el Ticket Oficial PDF firmado por WhatsApp.
+            </p>
+        </div>
+        
+        <a href="/" class="btn-generar" style="display: block; text-decoration: none; text-align: center; margin-top: 20px;">Volver al Inicio</a>
+    </div>
+</body>
+</html>

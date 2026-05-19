@@ -1,0 +1,268 @@
+:root {
+    --azul-bombonera: #0033a0;
+    --amarillo-bombonera: #f2a900;
+    --azul-oscuro: #0a1128;
+    --blanco: #ffffff;
+    --gris-claro: #f4f4f9;
+}
+
+body {
+    background-color: var(--azul-oscuro);
+    background-image: linear-gradient(rgba(10, 17, 40, 0.85), rgba(10, 17, 40, 0.85)), 
+                      url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=1000');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px 0; /* Espacio extra arriba y abajo para pantallas móviles */
+}
+
+/* CONTENEDOR FLEXIBLE QUE SE ADAPTA AL ALTO */
+
+.container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    height: auto; /*Permite crecer el cuadro*/        
+    overflow: visible; /*Muestra todo el contenido*/ 
+
+    /* --- AQUÍ AGREGAMOS EL BORDE AZUL REFORZADO --- */
+    border: 5px solid var(--azul-bombonera); 
+}
+
+.titulo-campeonato {
+    margin-top: -10px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.titulo-campeonato h2 {
+    color: #111;
+    font-size: 2.2rem;
+    margin: 0 0 5px 0;
+    letter-spacing: 2px;
+    font-weight: 900;
+}
+
+.subtitulo {
+    display: block;
+    color: var(--amarillo-bombonera);
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-top: 5px;
+    letter-spacing: 1px;
+    border-top: 3px solid var(--amarillo-bombonera);
+    padding-top: 5px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaciado fijo entre todos los elementos de tu captura */
+}
+
+input, select {
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    border-color: var(--azul-bombonera);
+}
+
+/* INTERFAZ DE TARJETAS DE PAGO */
+.seccion-pago {
+    margin-top: 5px;
+}
+
+.titulo-pago {
+    display: block;
+    font-weight: bold;
+    color: var(--azul-bombonera);
+    margin-bottom: 12px;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+/* --- NUEVOS ESTILOS PARA LOS QR EN EL FORMULARIO --- */
+
+.contenedor-metodos {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.tarjeta-metodo {
+    flex: 1;
+    background: #ffffff;
+    border: 2px solid #eee;
+    border-radius: 14px;
+    padding: 12px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    user-select: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Contenedor cuadrado para proteger el aspecto del QR */
+.contenedor-qr-visual {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fafafa;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #eaeaea;
+}
+
+.qr-pago-formulario {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Evita que el QR se deforme o se estire feo */
+}
+
+/* Alineación para la tarjeta bancaria para que calce con la altura del QR */
+.tarjeta-banco .icono-tarjeta-banco {
+    font-size: 2.2rem;
+    height: 70px;
+    line-height: 70px; /* Centra verticalmente el emoji del pago */
+}
+
+.tarjeta-metodo span {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #444;
+}
+
+/* Efectos visuales al seleccionar el QR */
+.tarjeta-metodo.activa {
+    border-color: var(--azul-bombonera);
+    background: rgba(0, 51, 160, 0.04);
+    box-shadow: 0 5px 15px rgba(0, 51, 160, 0.12);
+}
+
+.tarjeta-metodo.activa span {
+    color: var(--azul-bombonera);
+}
+
+.tarjeta-metodo span {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #555;
+}
+
+.logo-pago {
+    height: 28px;
+    object-fit: contain;
+}
+
+.icono-tarjeta-banco {
+    font-size: 1.8rem;
+    line-height: 28px;
+}
+
+.tarjeta-metodo:hover {
+    border-color: #ccc;
+    transform: translateY(-1px);
+}
+
+.tarjeta-metodo.activa {
+    border-color: var(--azul-bombonera);
+    background: rgba(0, 51, 160, 0.04);
+}
+
+.tarjeta-metodo.activa span {
+    color: var(--azul-bombonera);
+}
+
+/* RECUADRO DE ALERTAS / CUENTAS */
+.info-metodo {
+    background: #fffbe6;
+    border: 1px solid var(--amarillo-bombonera);
+    border-left: 5px solid var(--amarillo-bombonera);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.info-metodo p {
+    margin: 0;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* COMPROBANTE VOUCHER */
+.subir-comprobante {
+    text-align: left;
+    padding: 5px 0;
+}
+
+.subir-comprobante label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    color: #222;
+}
+
+.subir-comprobante input {
+    border: none;
+    padding: 5px 0;
+    background: transparent;
+}
+
+.precio-info {
+    font-size: 0.9rem;
+    color: #05128a;
+    margin: 5px 0;
+}
+
+/* BOTÓN AZUL AZUL DE LA BOMBONERA */
+.btn-generar {
+    background: var(--azul-bombonera);
+    color: #ffffff;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+}
+
+.btn-generar:hover {
+    background: #002266;
+}
+
+.btn-generar:active {
+    transform: scale(0.99);
+}

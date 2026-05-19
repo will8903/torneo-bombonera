@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Control - La Bombonera</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .tabla-admin { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; color: #333; border-radius: 8px; overflow: hidden; }
+        .tabla-admin th, .tabla-admin td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tabla-admin th { background-color: var(--azul-bombonera); color: white; }
+        
+        /* Etiquetas de estado */
+        .badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+        .pendiente { background: #ffe699; color: #8a6d3b; }
+        .pagado { background: #d4edda; color: #155724; }
+        
+        /* Etiquetas para las Categorías */
+        .cat-badge { padding: 4px 8px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .masculino { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+        .femenino { background: #fff0f6; color: #eb2f96; border: 1px solid #ffadd2; }
+
+        .btn-aprobar { background: #28a745; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 0.85rem; display: inline-block; }
+        .btn-aprobar:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 1000px; width: 95%;"> <h2>PANEL DE CONTROL (ADMIN)</h2>
+        <p>Lista de equipos inscritos para el 4° Aniversario</p>
+        
+        <table class="tabla-admin">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Equipo</th>
+                    <th>Ciudad</th> <th>Delegado</th>
+                    <th>Categoría</th> 
+                    <th>WhatsApp</th>
+                    <th>Método</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for equipo in equipos %}
+                <tr>
+                    <td>{{ equipo[0] }}</td>
+                    <td><strong>{{ equipo[1] }}</strong></td>
+                    <td>{{ equipo[2] }}</td> <td>{{ equipo[3] }}</td>
+                    <td>
+                        <span class="cat-badge {% if equipo[4] == 'Masculino' %}masculino{% else %}femenino{% endif %}">
+                            {{ equipo[4] }}
+                        </span>
+                    </td>
+                    <td>{{ equipo[5] }}</td>
+                    <td>{{ equipo[6] }}</td>
+                    <td>
+                        <span class="badge {% if equipo[7] == 'Pendiente' %}pendiente{% else %}pagado{% endif %}">
+                            {{ equipo[7] }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if equipo[7] == 'Pendiente' %}
+                            <a href="/admin/aprobar/{{ equipo[0] }}" class="btn-aprobar">Aprobar y Crear Ticket</a>
+                        {% else %}
+                            ✅ Listo
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        <a href="/" class="btn-generar" style="display:inline-block; text-decoration:none; background:#6c757d;">Ir al Formulario</a>
+    </div>
+</body>
+</html>
