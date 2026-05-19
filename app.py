@@ -79,19 +79,27 @@ def inscribir():
     
     return render_template('espera.html', equipo=nombre)
 
-# PANEL DE CONTROL (ADMIN)
+
+# PANEL DE CONTROL (ADMIN) - ACTUALIZADO PARA TRAER EL COMPROBANTE
 @app.route('/admin/panel')
 def panel_admin():
     init_db() 
     
-    # Corregido: Ahora apunta correctamente a RUTA_DB
     conn = sqlite3.connect(RUTA_DB)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, nombre_equipo, ciudad, delegado, categoria, telefono, metodo_pago, estado_pago FROM equipos")
+    # Agregamos 'ruta_comprobante' al final de la consulta (es el 9no campo, índice 8)
+    cursor.execute("SELECT id, nombre_equipo, ciudad, delegado, categoria, telefono, metodo_pago, estado_pago, ruta_comprobante FROM equipos")
     lista_equipos = cursor.fetchall()
     conn.commit()
     conn.close()
     return render_template('panel.html', equipos=lista_equipos)
+
+# NUEVA RUTA PARA VER LOS COMPROBANTES DESDE EL PANEL
+@app.route('/admin/comprobante/<filename>')
+def ver_comprobante(filename):
+    # Esto busca de forma segura el archivo dentro de la carpeta 'comprobantes' y lo muestra en el navegador
+    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
 
 # RUTA PARA APROBAR PAGO Y GENERAR TICKET
 @app.route('/admin/aprobar/<int:id>')
@@ -171,6 +179,11 @@ def aprobar_y_generar_ticket(id):
         os.remove(qr_ruta)
         
     return send_file(nombre_archivo, as_attachment=True)
+
+# RUTA PARA VER LOS COMPROBANTES DESDE EL PANEL
+@app.route('/admin/comprobante/<filename>')
+def ver_comprobante(filename):
+    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
 if __name__ == '__main__':
     app.run(debug=True)
